@@ -6,6 +6,7 @@ use Brain\Monkey;
 use Mockery;
 use Yoast\WP\SEO\Actions\Indexables\Indexable_Head_Action;
 use Yoast\WP\SEO\Conditionals\Headless_Rest_Endpoints_Enabled_Conditional;
+use Yoast\WP\SEO\Helpers\Post_Helper;
 use Yoast\WP\SEO\Helpers\Post_Type_Helper;
 use Yoast\WP\SEO\Helpers\Taxonomy_Helper;
 use Yoast\WP\SEO\Routes\Yoast_Head_REST_Field;
@@ -14,10 +15,13 @@ use Yoast\WP\SEO\Tests\Unit\TestCase;
 /**
  * Yoast_Head_REST_Field_Test class.
  *
- * @coversDefaultClass Yoast\WP\SEO\Routes\Yoast_Head_REST_Field
+ * @coversDefaultClass \Yoast\WP\SEO\Routes\Yoast_Head_REST_Field
  *
  * @group routes
  * @group indexables
+ *
+ * @phpcs:disable Yoast.Files.FileName.InvalidClassFileName
+ * @phpcs:disable Yoast.NamingConventions.ObjectNameDepth.MaxExceeded
  */
 class Yoast_Head_REST_Field_Test extends TestCase {
 
@@ -34,6 +38,13 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 	 * @var Taxonomy_Helper
 	 */
 	protected $taxonomy_helper;
+
+	/**
+	 * The post helper.
+	 *
+	 * @var Post_Helper
+	 */
+	protected $post_helper;
 
 	/**
 	 * The head action.
@@ -57,11 +68,13 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 
 		$this->post_type_helper = Mockery::mock( Post_Type_Helper::class );
 		$this->taxonomy_helper  = Mockery::mock( Taxonomy_Helper::class );
+		$this->post_helper      = Mockery::mock( Post_Helper::class );
 		$this->head_action      = Mockery::mock( Indexable_Head_Action::class );
 
 		$this->instance = new Yoast_Head_REST_Field(
 			$this->post_type_helper,
 			$this->taxonomy_helper,
+			$this->post_helper,
 			$this->head_action
 		);
 	}
@@ -115,7 +128,7 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 			->once()
 			->with(
 				'post_type',
-				Yoast_Head_REST_Field::YOAST_HEAD_FIELD_NAME,
+				Yoast_Head_REST_Field::YOAST_HEAD_ATTRIBUTE_NAME,
 				[ 'get_callback' => [ $this->instance, 'for_post' ] ]
 			);
 
@@ -123,7 +136,7 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 			->once()
 			->with(
 				'taxonomy',
-				Yoast_Head_REST_Field::YOAST_HEAD_FIELD_NAME,
+				Yoast_Head_REST_Field::YOAST_HEAD_ATTRIBUTE_NAME,
 				[ 'get_callback' => [ $this->instance, 'for_term' ] ]
 			);
 
@@ -131,7 +144,7 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 			->once()
 			->with(
 				'tag',
-				Yoast_Head_REST_Field::YOAST_HEAD_FIELD_NAME,
+				Yoast_Head_REST_Field::YOAST_HEAD_ATTRIBUTE_NAME,
 				[ 'get_callback' => [ $this->instance, 'for_term' ] ]
 			);
 
@@ -139,7 +152,7 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 			->once()
 			->with(
 				'user',
-				Yoast_Head_REST_Field::YOAST_HEAD_FIELD_NAME,
+				Yoast_Head_REST_Field::YOAST_HEAD_ATTRIBUTE_NAME,
 				[ 'get_callback' => [ $this->instance, 'for_author' ] ]
 			);
 
@@ -147,7 +160,7 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 			->once()
 			->with(
 				'type',
-				Yoast_Head_REST_Field::YOAST_HEAD_FIELD_NAME,
+				Yoast_Head_REST_Field::YOAST_HEAD_ATTRIBUTE_NAME,
 				[ 'get_callback' => [ $this->instance, 'for_post_type_archive' ] ]
 			);
 
@@ -173,47 +186,41 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 			->expects( $method )
 			->once()
 			->with( $input )
-			->andReturn(
-				(object) [
-					'status' => 200,
-					'head'   => 'this is the head',
-				]
-			);
+			->andReturn( $this->get_head() );
+
+		if ( $method === 'for_post' ) {
+			$this->post_helper->expects( 'is_post_indexable' )->once()->with( $params['id'] )->andReturnTrue();
+		}
 
 		if ( $method === 'for_post_type_archive' ) {
 			$this->post_type_helper->expects( 'has_archive' )->with( $input )->andReturnTrue();
 		}
 
-		$this->assertEquals( 'this is the head', $this->instance->{$method}( $params ) );
+		$output = $this->instance->{$method}( $params );
+
+		$this->assertEquals( 'this is the HTML head', $output );
 	}
 
 	/**
 	 * Tests adding the yoast_head property for the posts page.
 	 *
 	 * @covers ::for_post_type_archive
-	 *
-	 * @dataProvider method_provider
 	 */
 	public function test_adding_yoast_head_to_posts_page() {
 		$this->head_action
 			->expects( 'for_posts_page' )
 			->once()
-			->andReturn(
-				(object) [
-					'status' => 200,
-					'head'   => 'this is the head',
-				]
-			);
+			->andReturn( $this->get_head() );
 
-		$this->assertEquals( 'this is the head', $this->instance->for_post_type_archive( [ 'slug' => 'post' ] ) );
+		$output = $this->instance->for_post_type_archive( [ 'slug' => 'post' ] );
+
+		$this->assertEquals( 'this is the HTML head', $output );
 	}
 
 	/**
 	 * Tests adding the yoast_head property for the posts page.
 	 *
 	 * @covers ::for_post_type_archive
-	 *
-	 * @dataProvider method_provider
 	 */
 	public function test_adding_yoast_head_to_post_type_without_archive() {
 		$this->post_type_helper->expects( 'has_archive' )->with( 'no-archive' )->andReturnFalse();
@@ -247,6 +254,10 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 				]
 			);
 
+		if ( $method === 'for_post' ) {
+			$this->post_helper->expects( 'is_post_indexable' )->once()->with( $params['id'] )->andReturnTrue();
+		}
+
 		if ( $method === 'for_post_type_archive' ) {
 			$this->post_type_helper->expects( 'has_archive' )->with( $input )->andReturnTrue();
 		}
@@ -258,8 +269,6 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 	 * Tests adding the yoast_head property for the posts page.
 	 *
 	 * @covers ::for_post_type_archive
-	 *
-	 * @dataProvider method_provider
 	 */
 	public function test_adding_yoast_head_to_posts_page_with_404() {
 		$this->head_action
@@ -302,6 +311,22 @@ class Yoast_Head_REST_Field_Test extends TestCase {
 				[ 'slug' => 'type' ],
 				'type',
 			],
+		];
+	}
+
+	/**
+	 * Stub the Meta result.
+	 *
+	 * @param string $html The HTML setup.
+	 * @param string $json The JSON setup.
+	 *
+	 * @return object The mocked result.
+	 */
+	protected function get_head( $html = 'this is the HTML head', $json = 'this is the JSON head' ) {
+		return (object) [
+			'html'   => $html,
+			'json'   => $json,
+			'status' => 200,
 		];
 	}
 }

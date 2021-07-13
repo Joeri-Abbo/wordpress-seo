@@ -3,7 +3,6 @@
 namespace Yoast\WP\SEO\Tests\Unit\Admin\Views;
 
 use Brain\Monkey\Filters;
-use Brain\Monkey\Functions;
 use Yoast\WP\SEO\Tests\Unit\TestCase;
 use Yoast_Feature_Toggle;
 use Yoast_Integration_Toggles;
@@ -22,8 +21,10 @@ class Yoast_Integration_Toggles_Test extends TestCase {
 	 */
 	public function test_integration_toggles() {
 		$expected_names = [
-			0 => 'SEMrush integration',
+			0 => 'Semrush integration',
 			1 => 'Ryte integration',
+			2 => 'Zapier integration',
+			3 => 'Algolia integration',
 		];
 
 		$this->stubTranslationFunctions();
@@ -51,9 +52,11 @@ class Yoast_Integration_Toggles_Test extends TestCase {
 	public function test_toggle_sorting() {
 		$expected_names = [
 			0 => 'Dummy prio 5',
-			1 => 'SEMrush integration',
+			1 => 'Semrush integration',
 			2 => 'Ryte integration',
-			3 => 'Dummy prio 50',
+			3 => 'Zapier integration',
+			4 => 'Algolia integration',
+			5 => 'Dummy prio 50',
 		];
 
 		$this->stubTranslationFunctions();

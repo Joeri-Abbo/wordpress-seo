@@ -1,12 +1,14 @@
 # Grunt aliases
 ---
 'build':
+  - 'build:ts'
   - 'build:js'
   - 'build:css'
   - 'build:images'
   - 'build:i18n'
 
 'build-watch':
+  - 'clean:vendor-prefixed'
   - 'shell:composer-install'
   - 'build:js'
   - 'build:css'
@@ -14,15 +16,19 @@
 
 # Grunt command to only build CSS and JS
 'build:dev':
+  - 'build:ts'
   - 'build:js'
   - 'build:css'
+
+# Compile the TypeScript in the `schema-blocks` package
+'build:ts':
+  - 'shell:install-schema-blocks'
 
 # Build JavaScript from assets to production
 'build:js':
   - 'clean:build-assets-js'
-  - 'shell:install-schema-blocks'
   - 'copy:js-dependencies'
-  - 'webpack:buildDev'
+  - 'shell:webpack'
 
 # Build CSS for development
 'build:css':
@@ -53,8 +59,6 @@
   - 'copy:makepot-yoast-js-helpers'
   - 'shell:makepot-yoast-js-search-metadata-previews'
   - 'copy:makepot-yoast-js-search-metadata-previews'
-  - 'shell:makepot-yoast-js-schema-blocks'
-  - 'copy:makepot-yoast-js-schema-blocks'
   - 'shell:makepot-yoast-components-remaining'
   - 'shell:combine-pots-yoast-components'
   - 'shell:makepot-yoastseojs'
@@ -83,6 +87,7 @@ clean:build-assets:
   - 'update-version:initializer'
 
 'artifact':
+  - 'clean:vendor-prefixed'
   - 'shell:composer-install'
   - 'shell:compile-dependency-injection-container'
   - 'shell:remove-dependency-injection-meta'
@@ -96,9 +101,26 @@ clean:build-assets:
   # Create a zip file
   - 'compress:artifact'
 
+# Get the project ready for beta
+'create-beta':
+  - 'ensure-monorepo-is-unlinked'
+  - 'ensure-clean-branch'
+  - 'ensure-pre-release-branch'
+  - 'update-readme'
+  - 'bump-beta-version'
+  - 'sync-gutenberg-version'
+  - 'artifact'
+  - 'github-pre-release'
+  - 'notify-slack:beta'
+  - 'sync-readme-stable-tag'
+  - 'check-deploy-allowed'
+  - 'wp_deploy:trunk'
+  - 'shell:readme-reset-txt'
+  - 'verify-zip-size'
+  - 'celebrate'
+
 # Get the project ready for release-candidate
 'create-rc':
-  - 'ensure-monorepo-is-unlinked'
   - 'ensure-clean-branch'
   - 'ensure-pre-release-branch'
   - 'update-readme'
@@ -121,13 +143,15 @@ clean:build-assets:
 release:
   - 'clean:build-assets'
   - 'build:images'
+  - 'release:ts'
   - 'release:js'
   - 'release:css'
   - 'build:i18n'
-'release:js':
+'release:ts':
   - 'shell:install-schema-blocks'
+'release:js':
   - 'copy:js-dependencies'
-  - 'webpack:buildProd'
+  - 'shell:webpack-prod'
 
 # Build CSS for production
 'release:css':
@@ -146,6 +170,21 @@ release:
   - 'update-version-trunk'
   - 'artifact'
   - 'wp_deploy:trunk'
+
+'update-changelog:file':
+  - 'get-latest-pr-texts'
+  - 'update-changelog-with-latest-pr-texts'
+
+'update-changelog:qa':
+  - 'get-latest-pr-texts'
+  - 'download-qa-changelog'
+  - 'build-qa-changelog'
+
+'update-changelog:all':
+  - 'get-latest-pr-texts'
+  - 'update-changelog-with-latest-pr-texts'
+  - 'download-qa-changelog'
+  - 'build-qa-changelog'
 
 # Default task
 default:

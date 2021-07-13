@@ -29,7 +29,6 @@ module.exports = function( grunt ) {
 				"languages/<%= pkg.plugin.textdomain %>-temp.pot",
 				"<%= files.pot.yoastseojs %>",
 				"<%= files.pot.yoastComponents %>",
-				"<%= files.pot.yoastSchemaBocks %>",
 			],
 			toFile: "languages/<%= pkg.plugin.textdomain %>.pot",
 			command: function() {
@@ -86,9 +85,6 @@ module.exports = function( grunt ) {
 		"makepot-yoast-js-search-metadata-previews": {
 			command: "yarn i18n-yoast-js-search-metadata-previews",
 		},
-		"makepot-yoast-js-schema-blocks": {
-			command: "yarn i18n-yoast-js-schema-blocks",
-		},
 
 		"makepot-yoast-components-configuration-wizard": {
 			fromFiles: [
@@ -143,8 +139,16 @@ module.exports = function( grunt ) {
 			},
 		},
 
-		"composer install": {
-			command: "composer install",
+		webpack: {
+			command: "cross-env NODE_ENV=development yarn run wp-scripts build --config config/webpack/webpack.config.js",
+		},
+
+		"webpack-prod": {
+			command: "yarn run wp-scripts build --config config/webpack/webpack.config.js",
+		},
+
+		"webpack-watch": {
+			command: "yarn run wp-scripts start --config config/webpack/webpack.config.js",
 		},
 
 		"composer-install-production": {
@@ -184,10 +188,7 @@ module.exports = function( grunt ) {
 		},
 
 		"install-schema-blocks": {
-			// If a src directory exists in the schema-blocks but not dist directory then it needs to be built.
-			command: "if [ -d node_modules/@yoast/schema-blocks/src ] && [ ! -d node_modules/@yoast/schema-blocks/dist ]; then " +
-					 "cd node_modules/@yoast/schema-blocks && yarn install && yarn build; " +
-					 "fi",
+			command: "cd packages/schema-blocks && yarn install && yarn build && cd ../..",
 		},
 
 		"check-for-uncommitted-changes": {

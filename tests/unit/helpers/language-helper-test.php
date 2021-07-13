@@ -6,7 +6,7 @@ use Yoast\WP\SEO\Helpers\Language_Helper;
 use Yoast\WP\SEO\Tests\Unit\TestCase;
 
 /**
- * Class Language_Helper_Test
+ * Class Language_Helper_Test.
  *
  * @coversDefaultClass \Yoast\WP\SEO\Helpers\Language_Helper
  *
@@ -39,6 +39,7 @@ class Language_Helper_Test extends TestCase {
 	 * @param string $language The language to test.
 	 */
 	public function test_is_word_form_recognition_active( $language ) {
+
 		$this->assertTrue( $this->instance->is_word_form_recognition_active( $language ) );
 	}
 
@@ -48,7 +49,7 @@ class Language_Helper_Test extends TestCase {
 	 * @return string[][] The dataset.
 	 */
 	public function supported_language_provider() {
-		return [ [ 'de' ], [ 'en' ], [ 'es' ], [ 'fr' ], [ 'it' ], [ 'nl' ], [ 'ru' ], [ 'id' ], [ 'pt' ], [ 'pl' ], [ 'ar' ], [ 'sv' ], [ 'he' ], [ 'hu' ], [ 'nb' ], [ 'tr' ] ];
+		return [ [ 'de' ], [ 'en' ], [ 'es' ], [ 'fr' ], [ 'it' ], [ 'nl' ], [ 'ru' ], [ 'id' ], [ 'pt' ], [ 'pl' ], [ 'ar' ], [ 'sv' ], [ 'he' ], [ 'hu' ], [ 'nb' ], [ 'tr' ], [ 'cs' ] ];
 	}
 
 	/**
@@ -61,6 +62,7 @@ class Language_Helper_Test extends TestCase {
 	 * @param string $language The language to test.
 	 */
 	public function test_has_function_word_support( $language ) {
+
 		$this->assertTrue( $this->instance->has_function_word_support( $language ) );
 	}
 
@@ -87,6 +89,7 @@ class Language_Helper_Test extends TestCase {
 			[ 'hu' ],
 			[ 'nb' ],
 			[ 'tr' ],
+			[ 'cs' ],
 		];
 	}
 }

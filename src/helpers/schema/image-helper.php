@@ -33,11 +33,11 @@ class Image_Helper {
 	/**
 	 * Image_Helper constructor.
 	 *
+	 * @codeCoverageIgnore It handles dependencies.
+	 *
 	 * @param HTML_Helper       $html     The HTML helper.
 	 * @param Language_Helper   $language The language helper.
 	 * @param Main_Image_Helper $image    The 'main' image helper.
-	 *
-	 * @codeCoverageIgnore It handles dependencies.
 	 */
 	public function __construct( HTML_Helper $html, Language_Helper $language, Main_Image_Helper $image ) {
 		$this->html     = $html;
@@ -84,13 +84,36 @@ class Image_Helper {
 	}
 
 	/**
+	 * Retrieve data about an image from the database and use it to generate a Schema object.
+	 *
+	 * @param string $schema_id       The `@id` to use for the returned image.
+	 * @param array  $attachment_meta The attachment metadata.
+	 * @param string $caption         The caption string, if there is one.
+	 *
+	 * @return array Schema ImageObject array.
+	 */
+	public function generate_from_attachment_meta( $schema_id, $attachment_meta, $caption = '' ) {
+		$data = $this->generate_object( $schema_id );
+
+		$data['url']        = $attachment_meta['url'];
+		$data['contentUrl'] = $data['url'];
+		$data['width']      = $attachment_meta['width'];
+		$data['height']     = $attachment_meta['height'];
+		if ( ! empty( $caption ) ) {
+			$data['caption'] = $this->html->smart_strip_tags( $caption );
+		}
+
+		return $data;
+	}
+
+	/**
 	 * If we can't find $url in our database, we output a simple ImageObject.
 	 *
 	 * @param string $schema_id The `@id` to use for the returned image.
 	 * @param string $url       The image URL.
 	 * @param string $caption   A caption, if set.
 	 *
-	 * @return array $data Schema ImageObject array.
+	 * @return array Schema ImageObject array.
 	 */
 	public function simple_image_object( $schema_id, $url, $caption = '' ) {
 		$data = $this->generate_object( $schema_id );
