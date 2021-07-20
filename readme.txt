@@ -236,6 +236,13 @@ Your question has most likely been answered on our help center: [yoast.com/help/
 
 == Changelog ==
 
+= 16.7.1 =
+Release Date: July 20th, 2021
+
+Bugfixes:
+
+* Fixes a bug where the keyphrase assessments would not load when the site language is set to Slovak.
+
 = 16.7 =
 Release Date: July 13th, 2021
 
